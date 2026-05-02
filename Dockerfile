@@ -8,8 +8,6 @@ EXPOSE 8317
 
 # 安装 curl（用于下载配置文件）
 USER root
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-
 # 下载并修改配置文件
 RUN curl -fsSL "https://github.com/router-for-me/CLIProxyAPI/raw/refs/heads/main/config.example.yaml" \
     -o /tmp/config.example.yaml && \
