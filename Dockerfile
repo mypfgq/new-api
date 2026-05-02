@@ -19,7 +19,7 @@ RUN mkdir -p /CLIProxyAPI/config && \
     # 复制到最终位置
     cp /tmp/config.yaml /CLIProxyAPI/config/config.yaml && \
     # 清理临时文件
-    rm -f /tmp/config.yaml
+    
 
 # 设置启动命令（默认使用内置配置）
-CMD ["--config", "/CLIProxyAPI/config/config.yaml"]
+CMD ["--config", "/tmp/config.yaml"]
