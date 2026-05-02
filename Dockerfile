@@ -16,7 +16,7 @@ RUN curl -fsSL "https://github.com/router-for-me/CLIProxyAPI/raw/refs/heads/main
     mkdir -p /CLIProxyAPI/config && \
     cp /tmp/config.example.yaml /CLIProxyAPI/config/config.yaml && \
     rm -f /tmp/config.example.yaml
-RUM uname -a
+RUN uname -a
 # 创建 auth 目录（用于存储 OAuth tokens 等运行时数据）
 RUN mkdir -p /root/.cli-proxy-api && \
     chmod 700 /root/.cli-proxy-api
