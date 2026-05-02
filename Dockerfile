@@ -1,17 +1,31 @@
 FROM eceasy/cli-proxy-api:latest
 
-# 设置工作目录（镜像可能已设定，这里显式声明）
+# 设置工作目录
 WORKDIR /CLIProxyAPI
 
 # 暴露端口
 EXPOSE 8317
 
-# 注意：配置文件和 auth 目录需要在运行时挂载，不打包进镜像
-# 构建命令: docker build -t my-cli-proxy-api .
-# 运行命令: docker run --rm -p 8317:8317 \
-#   -v /path/to/your/config.yaml:/CLIProxyAPI/config.yaml \
-#   -v /path/to/your/auth-dir:/root/.cli-proxy-api \
-#   my-cli-proxy-api:latest
+# 安装 curl（用于下载配置文件）
+USER root
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-# 如果镜像有默认启动命令，无需覆盖；如需自定义可取消下面注释
-# CMD ["node", "index.js"]  # 示例，请根据实际启动命令调整
+# 下载并修改配置文件
+RUN curl -fsSL "https://github.com/router-for-me/CLIProxyAPI/raw/refs/heads/main/config.example.yaml" \
+    -o /tmp/config.example.yaml && \
+    sed -i 's/allow-remote: false/allow-remote: true/g' /tmp/config.example.yaml && \
+    sed -i 's/secret-key: ""/secret-key: "test1234"/g' /tmp/config.example.yaml && \
+    mkdir -p /CLIProxyAPI/config && \
+    cp /tmp/config.example.yaml /CLIProxyAPI/config/config.yaml && \
+    rm -f /tmp/config.example.yaml
+
+# 创建 auth 目录（用于存储 OAuth tokens 等运行时数据）
+RUN mkdir -p /root/.cli-proxy-api && \
+    chmod 700 /root/.cli-proxy-api
+
+# 设置启动命令，通过 --config 指定配置文件路径
+# 如果镜像已有 ENTRYPOINT，这里用 CMD 传递参数；如不生效可改用 ENTRYPOINT
+CMD ["--config", "/CLIProxyAPI/config/config.yaml"]
+
+# 切换回非 root 用户（如果镜像定义了非 root 用户，请取消下面一行的注释）
+# USER cli-proxy
