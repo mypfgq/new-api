@@ -1,25 +1,15 @@
-FROM eceasy/cli-proxy-api:latest
+FROM soulter/astrbot:latest
 
-# 设置工作目录
-WORKDIR /CLIProxyAPI
+WORKDIR /AstrBot
 
-# 暴露端口
-EXPOSE 8317
+# AstrBot WebUI 端口（在 apply.build 后台把此端口设为对外端口）
+EXPOSE 6185
 
-# 下载配置模板并直接修改生成最终配置
-ADD https://github.com/router-for-me/CLIProxyAPI/raw/refs/heads/main/config.example.yaml /tmp/config.yaml
+# 数据目录：请在 apply.build 把持久化卷挂载到此路径
+VOLUME ["/AstrBot/data"]
 
-# 修改配置并安装到目标位置（单条 RUN 避免层问题）
-RUN mkdir -p /CLIProxyAPI/config && \
-    mkdir -p /root/.cli-proxy-api && \
-    chmod 700 /root/.cli-proxy-api && \
-    # 修改配置项（allow-remote: false → true, secret-key: "" → "test1234"）
-    sed -i 's/allow-remote: false/allow-remote: true/g' /tmp/config.yaml && \
-    sed -i 's/secret-key: ""/secret-key: "test1234"/g' /tmp/config.yaml && \
-    # 复制到最终位置
-    cp /tmp/config.yaml /CLIProxyAPI/config/config.yaml && \
-    # 清理临时文件
-    
+# 健康检查：WebUI 正常响应即算健康
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:6185/ >/dev/null 2>&1 || exit 1
 
-# 设置启动命令（默认使用内置配置）
-CMD ["--config", "/tmp/config.yaml"]
+CMD ["python", "main.py"]
