@@ -1,0 +1,5 @@
+node_modules/
+dist/
+spacemolt
+.spacemolt-session.json
+*.tsbuildinfo
